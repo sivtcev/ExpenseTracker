@@ -4,7 +4,7 @@ import com.sivtcev.expensetracker.domain.Category;
 import com.sivtcev.expensetracker.exception.EtBadRequestException;
 import com.sivtcev.expensetracker.exception.EtResourceNotFoundException;
 import com.sivtcev.expensetracker.repository.CategoryRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -12,19 +12,19 @@ import java.util.List;
 
 @Service
 @Transactional
+@AllArgsConstructor
 public class CategoryServiceImpl implements CategoryService{
 
-    @Autowired
-    CategoryRepository categoryRepository;
+    private final CategoryRepository categoryRepository;
 
     @Override
     public List<Category> fetchAllCategories(long userId) {
-        return null;
+        return categoryRepository.findAll(userId);
     }
 
     @Override
     public Category fetchCategoryById(long userId, long categoryId) throws EtResourceNotFoundException {
-        return null;
+        return categoryRepository.findById(userId, categoryId);
     }
 
     @Override

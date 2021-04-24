@@ -3,7 +3,7 @@ package com.sivtcev.expensetracker.repository;
 import com.sivtcev.expensetracker.domain.Category;
 import com.sivtcev.expensetracker.exception.EtBadRequestException;
 import com.sivtcev.expensetracker.exception.EtResourceNotFoundException;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -13,8 +13,10 @@ import org.springframework.stereotype.Repository;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
 import java.util.List;
+import java.util.Objects;
 
 @Repository
+@AllArgsConstructor
 public class CategoryRepositoryImpl implements CategoryRepository {
 
     private static final String SQL_FIND_ALL = "SELECT C.CATEGORY_ID, C.USER_ID, C.TITLE, C.DESCRIPTION, " +
@@ -27,21 +29,20 @@ public class CategoryRepositoryImpl implements CategoryRepository {
             "VALUES(NEXTVAL('ET_CATEGORIES_SEQ'), ?, ?, ?)";
     private static final String SQL_UPDATE = "UPDATE ET_CATEGORIES SET TITLE = ?, DESCRIPTION = ? " +
             "WHERE USER_ID = ? AND CATEGORY_ID = ?";
-    private static final String SQL_DELETE_CATEGORY = "DELETE FROM ET_CATEGORIES WHERE USER_ID = ? AND CATEGORY_ID = ?,";
+    private static final String SQL_DELETE_CATEGORY = "DELETE FROM ET_CATEGORIES WHERE USER_ID = ? AND CATEGORY_ID = ?";
     private static final String SQL_DELETE_ALL_TRANSACTIONS = "DELETE FROM ET_TRANSACTIONS WHERE CATEGORY_ID = ?";
 
-    @Autowired
-    JdbcTemplate jdbcTemplate;
+    private final JdbcTemplate jdbcTemplate;
 
     @Override
     public List<Category> findAll(long userId) throws EtResourceNotFoundException {
-        return jdbcTemplate.query(SQL_FIND_ALL, new Object[]{userId}, categoryRowMapper);
+        return jdbcTemplate.query(SQL_FIND_ALL, categoryRowMapper, userId);
     }
 
     @Override
     public Category findById(long userId, long categoryId) throws EtResourceNotFoundException {
         try {
-            return jdbcTemplate.queryForObject(SQL_FIND_BY_ID, new Object[]{userId, categoryId}, categoryRowMapper);
+            return jdbcTemplate.queryForObject(SQL_FIND_BY_ID, categoryRowMapper, userId, categoryId);
         } catch (Exception e){
             throw new EtResourceNotFoundException("Category not found");
         }
@@ -58,7 +59,7 @@ public class CategoryRepositoryImpl implements CategoryRepository {
                 preparedStatement.setString(3, description);
                 return preparedStatement;
             }, keyHolder);
-            return (long) keyHolder.getKeys().get("CATEGORY_ID");
+            return (long) Objects.requireNonNull(keyHolder.getKeys()).get("CATEGORY_ID");
         } catch (Exception e) {
             throw new EtBadRequestException("Invalid request");
         }
@@ -67,7 +68,7 @@ public class CategoryRepositoryImpl implements CategoryRepository {
     @Override
     public void update(long userId, long categoryId, Category category) throws EtBadRequestException {
         try {
-            jdbcTemplate.update(SQL_UPDATE, new Object[]{category.getTitle(), category.getDescription(), userId, categoryId});
+            jdbcTemplate.update(SQL_UPDATE, category.getTitle(), category.getDescription(), userId, categoryId);
         } catch (Exception e){
             throw new EtBadRequestException("Invalid request");
         }
@@ -76,18 +77,16 @@ public class CategoryRepositoryImpl implements CategoryRepository {
     @Override
     public void removeById(long userId, long categoryId) {
         this.removeAllCatTransactions(categoryId);
-        jdbcTemplate.update(SQL_DELETE_CATEGORY, new Object[]{categoryId});
+        jdbcTemplate.update(SQL_DELETE_CATEGORY, categoryId);
     }
 
     private void removeAllCatTransactions(long categoryId){
-        jdbcTemplate.update(SQL_DELETE_ALL_TRANSACTIONS, new Object[]{categoryId});
+        jdbcTemplate.update(SQL_DELETE_ALL_TRANSACTIONS, categoryId);
     }
 
-    private RowMapper<Category> categoryRowMapper = ((rs, rowNum) -> {
-        return new Category(rs.getLong("CATEGORY_ID"),
-        rs.getLong("USER_ID"),
-        rs.getString("TITLE"),
-        rs.getString("DESCRIPTION"),
-        rs.getDouble("TOTAL_EXPENSE"));
-    });
+    private final RowMapper<Category> categoryRowMapper = ((rs, rowNum) -> new Category(rs.getLong("CATEGORY_ID"),
+    rs.getLong("USER_ID"),
+    rs.getString("TITLE"),
+    rs.getString("DESCRIPTION"),
+    rs.getDouble("TOTAL_EXPENSE")));
 }

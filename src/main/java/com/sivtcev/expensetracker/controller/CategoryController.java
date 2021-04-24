@@ -2,25 +2,27 @@ package com.sivtcev.expensetracker.controller;
 
 import com.sivtcev.expensetracker.domain.Category;
 import com.sivtcev.expensetracker.service.CategoryService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/api/categories")
+@AllArgsConstructor
 public class CategoryController {
 
-    @Autowired
-    CategoryService categoryService;
+    final private CategoryService categoryService;
 
     @GetMapping("")
-    public String getAllCategories(HttpServletRequest request) {
+    public ResponseEntity<List<Category>> getAllCategories(HttpServletRequest request) {
         long userId = (long) request.getAttribute("userId");
-        return "Authenticated. UserId: " + userId;
+        List<Category> categoryList = categoryService.fetchAllCategories(userId);
+        return ResponseEntity.ok(categoryList);
     }
 
     @GetMapping("/{categoryId}")
@@ -31,7 +33,7 @@ public class CategoryController {
         return ResponseEntity.ok(category);
     }
 
-    @PostMapping("")
+    @PostMapping("/")
     public ResponseEntity<Category> addCategory(HttpServletRequest request,
                                                 @RequestBody Map<String, Object> categoryMap) {
         long userId = (long) request.getAttribute("userId");

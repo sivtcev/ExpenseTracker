@@ -6,6 +6,7 @@ import com.sivtcev.expensetracker.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Objects;
 import java.util.regex.Pattern;
 
 @Service
@@ -30,7 +31,7 @@ public class UserServiceImpl implements UserService {
             email = email.toLowerCase();
         }
 
-        if (!pattern.matcher(email).matches()) {
+        if (!pattern.matcher(Objects.requireNonNull(email)).matches()) {
             throw new EtAuthException("Invalid email format");
         }
 

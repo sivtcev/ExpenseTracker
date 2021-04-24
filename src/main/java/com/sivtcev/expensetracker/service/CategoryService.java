@@ -1,7 +1,6 @@
 package com.sivtcev.expensetracker.service;
 
 import com.sivtcev.expensetracker.domain.Category;
-import com.sivtcev.expensetracker.exception.EtAuthException;
 import com.sivtcev.expensetracker.exception.EtBadRequestException;
 import com.sivtcev.expensetracker.exception.EtResourceNotFoundException;
 

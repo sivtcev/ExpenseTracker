@@ -2,7 +2,7 @@ package com.sivtcev.expensetracker.controller;
 
 import com.sivtcev.expensetracker.domain.Transaction;
 import com.sivtcev.expensetracker.service.TransactionService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,10 +13,10 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/categories/{categoryId}/transactions")
+@AllArgsConstructor
 public class TransactionController {
 
-    @Autowired
-    TransactionService transactionService;
+    private final TransactionService transactionService;
 
     @GetMapping("")
     public ResponseEntity<List<Transaction>> getAllTransactions(HttpServletRequest request,
@@ -26,7 +26,7 @@ public class TransactionController {
         return ResponseEntity.ok(transactions);
     }
 
-    @GetMapping("{transactionId}")
+    @GetMapping("/{transactionId}")
     public ResponseEntity<Transaction> getTransactionsById(HttpServletRequest request,
                                                            @PathVariable("categoryId") long categoryId,
                                                            @PathVariable("transactionId") long transactionId) {
@@ -40,7 +40,7 @@ public class TransactionController {
                                                       @PathVariable("categoryId") long categoryId,
                                                       @RequestBody Map<String, Object> transactionMap) {
         long userId = (long) request.getAttribute("userId");
-        double amount = Double.valueOf(transactionMap.get("amount").toString());
+        double amount = Double.parseDouble(transactionMap.get("amount").toString());
         String note = (String) transactionMap.get("note");
         long transactionDate = (long) transactionMap.get("transactionDate");
         Transaction transaction = transactionService.addTransaction(userId, categoryId, amount, note, transactionDate);

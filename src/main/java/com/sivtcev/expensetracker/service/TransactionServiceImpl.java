@@ -4,7 +4,7 @@ import com.sivtcev.expensetracker.domain.Transaction;
 import com.sivtcev.expensetracker.exception.EtBadRequestException;
 import com.sivtcev.expensetracker.exception.EtResourceNotFoundException;
 import com.sivtcev.expensetracker.repository.TransactionRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -12,10 +12,10 @@ import java.util.List;
 
 @Service
 @Transactional
+@AllArgsConstructor
 public class TransactionServiceImpl implements TransactionService {
 
-    @Autowired
-    TransactionRepository transactionRepository;
+    private final TransactionRepository transactionRepository;
 
     @Override
     public List<Transaction> fetchAllTransactions(long userId, long categoryId) throws EtResourceNotFoundException {
